@@ -51,7 +51,10 @@ json.dump(g, open('graph.json', 'w'), indent=1, default=str)
 
 s = open('index.html').read()
 a = s.index("const DATA = "); b = s.index(";\n", a)
-open('index.html', 'w').write(s[:a] + "const DATA = " + json.dumps(g) + s[b:])
+# a single 25,000-character line is valid HTML but chokes strict parsers,
+# LinkedIn's crawler among them, so wrap it
+blob = json.dumps(g, indent=1, default=str)
+open('index.html', 'w').write(s[:a] + "const DATA = " + blob + s[b:])
 
 print(f"{len(g['roles'])} roles, {len(g['nodes'])} nodes, {len(g['links'])} links")
 if orphans: print("not drawn, no links:", ", ".join(orphans))
