@@ -337,6 +337,8 @@ links:
   - {role: liza, node: mcp,          strength: 2, first: true}
   - {role: liza, node: jira,         strength: 3, first: true}
   - {role: liza, node: gdpr,         strength: 3, first: true}
+  - {role: motherlode, node: gdpr, strength: 3}
+  - {role: ggmr, node: gdpr, strength: 3}
   - {role: liza, node: childsafety,  strength: 3, first: true}
   - {role: liza, node: payments,     strength: 1}
   - {role: liza, node: roadmap,      strength: 2}

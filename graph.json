@@ -743,7 +743,7 @@
    "label": "GDPR in practice",
    "kind": "skill",
    "group": "compliance",
-   "roles": 1
+   "roles": 3
   },
   {
    "id": "fraud",
@@ -1226,6 +1226,16 @@
   },
   {
    "role": "liza",
+   "node": "gdpr",
+   "strength": 3
+  },
+  {
+   "role": "motherlode",
+   "node": "gdpr",
+   "strength": 3
+  },
+  {
+   "role": "ggmr",
    "node": "gdpr",
    "strength": 3
   },
