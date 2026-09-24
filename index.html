@@ -301,8 +301,11 @@ let mode='free';
 function applyLayout(instant){
   const byDate = mode==='date';
   axis.style('display', byDate?null:'none');
-  sim.force('x', d3.forceX(d=> byDate && d.type==='role' ? x(d.mid) : W/2)
-                   .strength(d=> byDate ? (d.type==='role'?1:.012) : (d.type==='role'?.06:.02)))
+  // free mode still leans on the dates, just gently: roles drift towards their
+  // year rather than being pinned to it, so the story reads left to right
+  // without the layout losing its freedom
+  sim.force('x', d3.forceX(d=> d.type==='role' ? x(d.mid) : W/2)
+                   .strength(d=> byDate ? (d.type==='role'?1:.012) : (d.type==='role'?.16:.015)))
      .force('y', d3.forceY(H/2).strength(d=> byDate ? (d.type==='role'?.09:.035) : .04))
      .force('charge', d3.forceManyBody().strength(d=> d.type==='role' ? (byDate?-520:-900) : -110));
   nodes.forEach(n=>{ n.fx=null; n.fy=null; });
