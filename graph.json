@@ -606,6 +606,13 @@
    "roles": 2
   },
   {
+   "id": "chatgpt",
+   "label": "ChatGPT",
+   "kind": "tool",
+   "group": "ai",
+   "roles": 1
+  },
+  {
    "id": "openai",
    "label": "OpenAI API",
    "kind": "tool",
@@ -1975,6 +1982,11 @@
   {
    "role": "personal",
    "node": "llmfeatures",
+   "strength": 3
+  },
+  {
+   "role": "personal",
+   "node": "chatgpt",
    "strength": 3
   },
   {

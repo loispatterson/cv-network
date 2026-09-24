@@ -194,6 +194,7 @@ nodes:
   - {id: llmfeatures,  label: Shipping LLM features,  kind: skill, group: ai}
   - {id: agents,       label: Browser agents,         kind: skill, group: ai}
   - {id: claudecode,   label: Claude Code,            kind: tool,  group: ai}
+  - {id: chatgpt,      label: ChatGPT,                kind: tool,  group: ai}
   - {id: openai,       label: OpenAI API,             kind: tool,  group: ai}
   - {id: anthropic,    label: Anthropic API,          kind: tool,  group: ai}
   - {id: mcp,          label: MCP,                    kind: tool,  group: ai}
@@ -500,6 +501,7 @@ links:
   - {role: personal, node: d3, strength: 3}
   - {role: personal, node: claudecode, strength: 3}
   - {role: personal, node: llmfeatures, strength: 3}
+  - {role: personal, node: chatgpt, strength: 3}
   - {role: education, node: bsc, strength: 3}
   - {role: education, node: msc, strength: 3}
   - {role: personal, node: nanodegree, strength: 3}
