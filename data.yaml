@@ -1,0 +1,506 @@
+# Career network: roles, the things you did in them, and the links between.
+#
+# Three lists. Keep ids short, lowercase and stable, because the links refer to
+# them by id and renaming one breaks every link that points at it.
+#
+#   roles   the jobs. Circle size comes from months, which is computed from the
+#           dates, so you never type a size.
+#   nodes   everything a role can connect to: skills, tools and domains.
+#   links   which role used which node, and how central it was.
+#
+# To add something: put it in `nodes` once, then add a line to `links` for every
+# role it belongs to. A node with no links will not be drawn.
+#
+# `first: true` marks where you first used something. Useful because it lets the
+# diagram show origin, which is the interesting part of a long career: the SQL
+# starts at the ONS in 1999 and never stops.
+
+# ---------------------------------------------------------------- roles ------
+# kind: work | study   (study lets the degrees sit in the same graph if you want)
+# strength on a link is 1 to 3: 1 touched it, 2 used it regularly, 3 central to
+# the job. It drives line thickness, so be sparing with 3s or everything shouts.
+
+roles:
+  - id: education
+    company: Education
+    title: Degrees
+    kind: study
+    start: 1995-09
+    end: 2001-09
+    years: 4               # actual time studying, not the span: 3 for the BSc, 1 for the MSc
+    mid: 1998.5
+    location: Leicester and Bristol
+
+  - id: ons
+    company: Office for National Statistics
+    title: Retail Prices Index
+    start: 1999-02
+    end: 2000-08
+    # The exact months are inferred, not recorded. What is known is 1999 to
+    # 2000, somewhere between 18 months and 2 years, ending before the Bristol
+    # MSc began in September 2000. Either way it rounds to 2.
+    location: United Kingdom
+
+  - id: steer
+    company: Steer Davies Gleave
+    title: Transport modelling
+    start: 2001-09          # straight out of the Bristol MSc, which ran 2000 to 2001
+    end: 2003-01
+    location: London
+
+  - id: cerc
+    company: CERC
+    title: Scientific software
+    start: 2003-01
+    end: 2006-01
+    location: Cambridge
+
+  - id: source
+    company: Source Medical
+    title: Developer
+    start: 2006-01
+    end: 2008-01
+    location: Connecticut, USA
+
+  - id: fluidone
+    company: FluidOne
+    title: Developer, then Head of Software Development
+    start: 2008-06
+    end: 2018-01
+    location: London
+
+  - id: motherlode
+    company: Motherlode Media
+    title: Technical Project Manager
+    start: 2018-06
+    end: 2022-02
+    location: Remote, France
+
+  - id: ggmr
+    company: GGMR
+    title: Technical Project Manager
+    employment: fixed-term contract    # four months was the length of the engagement,
+                                       # not a short stay in a permanent job
+    start: 2022-03
+    end: 2022-06
+    years: 0.3            # four months. The one role too short to round up to a year.
+    location: Remote, France
+
+  - id: sweepbright
+    company: SweepBright
+    title: Technical Product Manager
+    start: 2022-11
+    end: 2024-12
+    location: Remote, France
+
+  - id: personal
+    company: Personal training
+    title: Self-directed learning and side projects
+    kind: study
+    start: 2019-01
+    end: null
+    location: Chamonix
+
+  - id: liza
+    company: Liza.network
+    title: Product Manager / Data Analyst
+    start: 2026-02
+    end: null                      # null means still there
+    location: Remote, France
+
+# ---------------------------------------------------------------- nodes ------
+# kind: skill | tool | domain
+# group drives colour. Add groups freely, the diagram reads them from here.
+#   analytics, engineering, product, leadership, ai, compliance, sector, everyday
+
+nodes:
+  # --- data and analytics
+  - {id: sql,          label: SQL,                    kind: skill, group: analytics}
+  - {id: stats,        label: Statistical modelling,  kind: skill, group: analytics}
+  - {id: maths,        label: Applied mathematics,    kind: skill, group: analytics}
+  - {id: analytics,    label: Product analytics,      kind: skill, group: analytics}
+  - {id: dataviz,      label: Data visualisation,     kind: skill, group: analytics}
+  - {id: storytelling, label: Data storytelling,      kind: skill, group: analytics}
+  - {id: gis,          label: GIS,                    kind: skill, group: analytics}
+  - {id: tableau,      label: Tableau,                kind: tool,  group: analytics}
+  - {id: mixpanel,     label: Mixpanel,               kind: tool,  group: analytics}
+  - {id: ga,           label: Google Analytics,       kind: tool,  group: analytics}
+  - {id: lookerstudio, label: Looker Studio,          kind: tool,  group: analytics}
+  - {id: mapinfo,      label: MapInfo,                kind: tool,  group: analytics}
+  - {id: arcgis,       label: ArcGIS,                 kind: tool,  group: analytics}
+  - {id: python,       label: Python,                 kind: tool,  group: analytics}
+  - {id: d3,           label: D3,                     kind: tool,  group: analytics}
+  - {id: dataanalysis, label: Data analysis,          kind: skill, group: analytics}
+  - {id: mongodb,      label: MongoDB,                kind: tool,  group: analytics}
+  - {id: nosql,        label: NoSQL,                  kind: skill, group: analytics}
+  - {id: mysql,        label: MySQL,                  kind: tool,  group: analytics}
+  - {id: msaccess,     label: MS Access,              kind: tool,  group: analytics}
+  - {id: pandas,       label: Pandas,                 kind: tool,  group: analytics}
+  - {id: simul8,       label: Simul8,                 kind: tool,  group: analytics}
+  - {id: ingres,       label: Ingres,                 kind: tool,  group: analytics}
+
+  # --- engineering
+  - {id: apidesign,    label: API design,             kind: skill, group: engineering}
+  - {id: devtools,     label: Building for developers,kind: skill, group: engineering}
+  - {id: fullstack,    label: Reading and modifying code, kind: skill, group: engineering}
+  - {id: billing,      label: Billing automation,     kind: skill, group: engineering}
+  - {id: uidev,        label: UI development,         kind: skill, group: engineering}
+  - {id: csharp,       label: "C#",                   kind: tool,  group: engineering}
+  - {id: sqlserver,    label: SQL Server,             kind: tool,  group: engineering}
+  - {id: ssrs,         label: SSRS,                   kind: tool,  group: engineering}
+  - {id: wagtail,      label: Wagtail,                kind: tool,  group: engineering}
+  - {id: drupal,       label: Drupal,                 kind: tool,  group: engineering}
+  - {id: k8s,          label: Kubernetes,             kind: tool,  group: engineering}
+  - {id: terraform,    label: Terraform,              kind: tool,  group: engineering}
+  - {id: vercel,       label: Vercel,                 kind: tool,  group: engineering}
+  - {id: apis,         label: APIs,                   kind: skill, group: engineering}
+  - {id: vb6,          label: VB6,                    kind: tool,  group: engineering}
+  - {id: perl,         label: Perl,                   kind: tool,  group: engineering}
+  - {id: loadbalance,  label: Load balancing,         kind: skill, group: engineering}
+  - {id: devops,       label: DevOps,                 kind: skill, group: engineering}
+  - {id: git,          label: Git,                    kind: tool,  group: engineering}
+  - {id: testing,      label: Testing,                kind: skill, group: engineering}
+  - {id: thirdpartyapi,label: Third-party integration,kind: skill, group: engineering}
+  - {id: webservices,  label: Web services,           kind: skill, group: engineering}
+  - {id: dbdesign,     label: Database design,        kind: skill, group: engineering}
+  - {id: versioncontrol,label: Version control,       kind: skill, group: engineering}
+  - {id: php,          label: PHP,                    kind: tool,  group: engineering}
+  - {id: java,         label: Java,                   kind: tool,  group: engineering}
+  - {id: soap,         label: SOAP,                   kind: tool,  group: engineering}
+  - {id: mvc,          label: MVC,                    kind: tool,  group: engineering}
+  - {id: visualstudio, label: Visual Studio,          kind: tool,  group: engineering}
+  - {id: tfs,          label: TFS,                    kind: tool,  group: engineering}
+
+  # --- product
+  - {id: discovery,    label: Discovery,              kind: skill, group: product}
+  - {id: roadmap,      label: Roadmap and prioritisation, kind: skill, group: product}
+  - {id: release,      label: Release management,     kind: skill, group: product}
+  - {id: onboarding,   label: Onboarding and time to value, kind: skill, group: product}
+  - {id: mobile,       label: Mobile launch,          kind: skill, group: product}
+  - {id: localisation, label: Localisation and RTL,   kind: skill, group: product}
+  - {id: processanal,  label: Process analysis,       kind: skill, group: product}
+  - {id: jira,         label: Jira,                   kind: tool,  group: product}
+  - {id: appstores,    label: App Store and Play,     kind: tool,  group: product}
+  - {id: projectmgmt,  label: Project management,     kind: skill, group: product}
+  - {id: productmgmt,  label: Product management,     kind: skill, group: product}
+  # platforms shipped on. `domain` so they draw as squares, like sectors:
+  # a context rather than a thing you use
+  - {id: android,      label: Android,                kind: domain, group: product}
+  - {id: ios,          label: iOS,                    kind: domain, group: product}
+  - {id: web,          label: Web,                    kind: domain, group: product}
+  - {id: notion,       label: Notion,                 kind: tool,  group: product}
+
+  # --- ai
+  - {id: llmfeatures,  label: Shipping LLM features,  kind: skill, group: ai}
+  - {id: agents,       label: Browser agents,         kind: skill, group: ai}
+  - {id: claudecode,   label: Claude Code,            kind: tool,  group: ai}
+  - {id: openai,       label: OpenAI API,             kind: tool,  group: ai}
+  - {id: anthropic,    label: Anthropic API,          kind: tool,  group: ai}
+  - {id: mcp,          label: MCP,                    kind: tool,  group: ai}
+  - {id: machinelearning, label: Machine learning,    kind: skill, group: ai}
+  - {id: keras,        label: Keras,                  kind: tool,  group: ai}
+  - {id: aws,          label: AWS,                    kind: tool,  group: ai}
+
+  # --- leadership and delivery
+  - {id: linemgmt,     label: Line management,        kind: skill, group: leadership}
+  - {id: peoplemgmt,   label: Influence without authority, kind: skill, group: leadership}
+  - {id: distributed,  label: Distributed teams,      kind: skill, group: leadership}
+  - {id: contractors,  label: Coordinating contractors, kind: skill, group: leadership}
+  - {id: agile,        label: Agile facilitation,     kind: skill, group: leadership}
+  - {id: demos,        label: Company demos,          kind: skill, group: leadership}
+  - {id: waterfall,   label: Waterfall,              kind: skill, group: leadership}
+  - {id: execteam,     label: Executive team,         kind: skill, group: leadership}
+  - {id: recruitment,  label: Recruitment,            kind: skill, group: leadership}
+  - {id: training,     label: Training and enablement,kind: skill, group: leadership}
+  - {id: reportwriting,label: Report writing,         kind: skill, group: leadership}
+  - {id: support,      label: Customer support,       kind: skill, group: leadership}
+  - {id: consultant,  label: Consultancy,            kind: skill, group: leadership}
+
+  # --- compliance
+  - {id: gdpr,         label: GDPR in practice,       kind: skill, group: compliance}
+  - {id: fraud,        label: Fraud prevention,       kind: skill, group: compliance}
+  - {id: childsafety,  label: Child safety review,    kind: skill, group: compliance}
+  - {id: payments,     label: Payments integration,   kind: skill, group: compliance}
+  - {id: iso,          label: ISO standards,          kind: skill, group: compliance}
+  - {id: hipaa,        label: HIPAA,                  kind: skill, group: compliance}
+
+  # --- sectors
+  - {id: telecoms,     label: Telecoms,               kind: domain, group: sector}
+  - {id: property,     label: Property,               kind: domain, group: sector}
+  - {id: nonprofit,    label: Non-profit,             kind: domain, group: sector}
+  - {id: health,       label: Healthcare,             kind: domain, group: sector}
+  - {id: environment,  label: Environment,            kind: domain, group: sector}
+  - {id: consumer,     label: Consumer mobile,        kind: domain, group: sector}
+
+  # --- qualifications, which hang off the Education circle
+  - {id: bsc,          label: "BSc Mathematics, Leicester",   kind: domain, group: education}
+  - {id: msc,          label: "MSc Environmental & Industrial Modelling, Bristol", kind: domain, group: education}
+  - {id: nanodegree,   label: "Machine Learning Engineering, Udacity", kind: domain, group: education}
+  # a skill rather than a qualification, so it draws as a circle, not a square
+  - {id: french,       label: "French (B1)",           kind: skill,  group: education}
+
+  # --- everyday tools, used everywhere. `everyday: true` lets the diagram hide
+  #     them: a node linked to every role pulls the whole graph into a knot.
+  - {id: excel,        label: Excel,                  kind: tool,  group: everyday, everyday: true}
+  - {id: word,         label: Word,                   kind: tool,  group: everyday, everyday: true}
+  - {id: powerpoint,   label: PowerPoint,             kind: tool,  group: everyday, everyday: true}
+  - {id: outlook,      label: Outlook,                kind: tool,  group: everyday, everyday: true}
+
+# ---------------------------------------------------------------- links ------
+# role, node, strength 1 to 3, and first: true where it began.
+
+links:
+  # Office for National Statistics, 1999 to 2000
+  - {role: ons, node: sql,         strength: 2, first: true}
+  - {role: ons, node: stats,       strength: 3, first: true}
+  - {role: ons, node: gis,         strength: 2, first: true}
+  - {role: ons, node: mapinfo,     strength: 2, first: true}
+
+  # Steer Davies Gleave, 2001 to 2003
+  - {role: steer, node: stats,     strength: 3}
+
+  # CERC, 2003 to 2006
+  - {role: cerc, node: uidev,      strength: 3, first: true}
+  - {role: cerc, node: stats,      strength: 2}
+  - {role: cerc, node: gis,        strength: 2}
+  - {role: cerc, node: arcgis,     strength: 2, first: true}
+  - {role: cerc, node: environment, strength: 3, first: true}
+
+  # Source Medical, 2006 to 2008
+  - {role: source, node: csharp,   strength: 3, first: true}
+  - {role: source, node: uidev,    strength: 3}
+  - {role: source, node: dataviz,  strength: 2, first: true}
+  - {role: source, node: health,   strength: 3, first: true}
+
+  # FluidOne, 2008 to 2018
+  - {role: fluidone, node: apidesign,  strength: 3, first: true}
+  - {role: fluidone, node: devtools,   strength: 3, first: true}
+  - {role: fluidone, node: billing,    strength: 3, first: true}
+  - {role: fluidone, node: processanal, strength: 3, first: true}
+  - {role: fluidone, node: linemgmt,   strength: 3, first: true}
+  - {role: fluidone, node: distributed, strength: 2, first: true}
+  - {role: fluidone, node: fullstack,  strength: 3, first: true}
+  - {role: fluidone, node: discovery,  strength: 3, first: true}
+  - {role: fluidone, node: sqlserver,  strength: 3, first: true}
+  - {role: fluidone, node: ssrs,       strength: 2, first: true}
+  - {role: fluidone, node: sql,        strength: 3}
+  - {role: fluidone, node: csharp,     strength: 2}
+  - {role: fluidone, node: telecoms,   strength: 3, first: true}
+
+  # Motherlode Media, 2018 to 2022
+  - {role: motherlode, node: payments,    strength: 3, first: true}
+  - {role: motherlode, node: fraud,       strength: 3, first: true}
+  - {role: motherlode, node: localisation, strength: 3, first: true}
+  - {role: motherlode, node: distributed, strength: 3}
+  - {role: motherlode, node: drupal,      strength: 2, first: true}
+  - {role: motherlode, node: lookerstudio, strength: 2, first: true}
+  - {role: motherlode, node: analytics,   strength: 2, first: true}
+  - {role: motherlode, node: nonprofit,   strength: 3, first: true}
+
+  # GGMR, 2022
+  - {role: ggmr, node: contractors,   strength: 3, first: true}
+  - {role: ggmr, node: wagtail,       strength: 2, first: true}
+  - {role: ggmr, node: python,        strength: 1, first: true}
+  - {role: ggmr, node: k8s,           strength: 1, first: true}
+  - {role: ggmr, node: terraform,     strength: 1, first: true}
+  - {role: ggmr, node: lookerstudio,  strength: 2}
+  - {role: ggmr, node: telecoms,      strength: 2}
+
+  # SweepBright, 2022 to 2024
+  - {role: sweepbright, node: analytics,   strength: 3}
+  - {role: sweepbright, node: mixpanel,    strength: 3, first: true}
+  - {role: sweepbright, node: ga,          strength: 2, first: true}
+  - {role: sweepbright, node: tableau,     strength: 3, first: true}
+  - {role: sweepbright, node: storytelling, strength: 3, first: true}
+  - {role: sweepbright, node: mobile,      strength: 3, first: true}
+  - {role: sweepbright, node: llmfeatures, strength: 3, first: true}
+  - {role: sweepbright, node: openai,      strength: 2, first: true}
+  - {role: sweepbright, node: onboarding,  strength: 2, first: true}
+  - {role: sweepbright, node: localisation, strength: 2}
+  - {role: sweepbright, node: roadmap,     strength: 3, first: true}
+  - {role: sweepbright, node: release,     strength: 2, first: true}
+  - {role: sweepbright, node: agile,       strength: 3, first: true}
+  - {role: sweepbright, node: demos,       strength: 3, first: true}
+  - {role: sweepbright, node: discovery,   strength: 3}
+  - {role: sweepbright, node: appstores,   strength: 2, first: true}
+  - {role: sweepbright, node: property,    strength: 3, first: true}
+  - {role: sweepbright, node: android, strength: 3}
+  - {role: sweepbright, node: ios, strength: 3}
+  - {role: sweepbright, node: web, strength: 3}
+
+  # Liza.network, 2026 to now
+  - {role: liza, node: release,      strength: 3}
+  - {role: liza, node: appstores,    strength: 3}
+  - {role: liza, node: agents,       strength: 3, first: true}
+  - {role: liza, node: claudecode,   strength: 3, first: true}
+  - {role: liza, node: mcp,          strength: 2, first: true}
+  - {role: liza, node: jira,         strength: 3, first: true}
+  - {role: liza, node: gdpr,         strength: 3, first: true}
+  - {role: liza, node: childsafety,  strength: 3, first: true}
+  - {role: liza, node: payments,     strength: 1}
+  - {role: liza, node: roadmap,      strength: 2}
+  - {role: liza, node: consumer,     strength: 3, first: true}
+  - {role: liza, node: android, strength: 3}
+  - {role: liza, node: ios, strength: 3}
+  - {role: liza, node: web, strength: 3}
+
+  # ---- added 24 September 2026 ----
+  - {role: steer, node: sql, strength: 2}
+  - {role: cerc, node: sql, strength: 2}
+  - {role: source, node: sql, strength: 2}
+  - {role: motherlode, node: sql, strength: 2}
+  - {role: ggmr, node: sql, strength: 2}
+  - {role: sweepbright, node: sql, strength: 2}
+  - {role: cerc, node: mapinfo, strength: 2}
+  - {role: cerc, node: vb6, strength: 2, first: true}
+  - {role: sweepbright, node: mongodb, strength: 2, first: true}
+  - {role: fluidone, node: nosql, strength: 2, first: true}
+  - {role: fluidone, node: perl, strength: 2, first: true}
+  - {role: fluidone, node: loadbalance, strength: 2, first: true}
+  - {role: fluidone, node: apis, strength: 3}
+  - {role: source, node: apis, strength: 3, first: true}
+  - {role: motherlode, node: apis, strength: 3}
+  - {role: sweepbright, node: apis, strength: 3}
+  - {role: motherlode, node: ga, strength: 2, first: true}
+  - {role: ggmr, node: ga, strength: 2}
+  - {role: fluidone, node: projectmgmt, strength: 3, first: true}
+  - {role: ggmr, node: projectmgmt, strength: 3}
+  - {role: motherlode, node: projectmgmt, strength: 3}
+  - {role: liza, node: projectmgmt, strength: 3}
+  - {role: fluidone, node: productmgmt, strength: 3, first: true}
+  - {role: sweepbright, node: productmgmt, strength: 3}
+  - {role: liza, node: productmgmt, strength: 3}
+  - {role: sweepbright, node: git, strength: 2, first: true}
+  - {role: personal, node: git, strength: 2}
+  - {role: personal, node: python, strength: 3}
+  - {role: motherlode, node: jira, strength: 2, first: true}
+  - {role: fluidone, node: jira, strength: 2}
+  - {role: sweepbright, node: notion, strength: 2, first: true}
+  - {role: ggmr, node: notion, strength: 2}
+  - {role: motherlode, node: devops, strength: 2, first: true}
+  - {role: fluidone, node: demos, strength: 2, first: true}
+  - {role: fluidone, node: testing, strength: 2, first: true}
+  - {role: motherlode, node: testing, strength: 2}
+  - {role: ggmr, node: testing, strength: 2}
+  - {role: sweepbright, node: testing, strength: 2}
+  - {role: liza, node: testing, strength: 2}
+  - {role: ons, node: excel, strength: 1, first: true}
+  - {role: ons, node: word, strength: 1, first: true}
+  - {role: ons, node: powerpoint, strength: 1, first: true}
+  - {role: ons, node: outlook, strength: 1}
+  - {role: ons, node: dataanalysis, strength: 1, first: true}
+  - {role: steer, node: excel, strength: 1}
+  - {role: steer, node: word, strength: 1}
+  - {role: steer, node: powerpoint, strength: 1}
+  - {role: steer, node: outlook, strength: 1}
+  - {role: steer, node: dataanalysis, strength: 1}
+  - {role: cerc, node: excel, strength: 1}
+  - {role: cerc, node: word, strength: 1}
+  - {role: cerc, node: powerpoint, strength: 1}
+  - {role: cerc, node: outlook, strength: 1}
+  - {role: cerc, node: dataanalysis, strength: 1}
+  - {role: source, node: excel, strength: 1}
+  - {role: source, node: word, strength: 1}
+  - {role: source, node: powerpoint, strength: 1}
+  - {role: source, node: outlook, strength: 1}
+  - {role: source, node: dataanalysis, strength: 1}
+  - {role: fluidone, node: excel, strength: 1}
+  - {role: fluidone, node: word, strength: 1}
+  - {role: fluidone, node: powerpoint, strength: 1}
+  - {role: fluidone, node: outlook, strength: 1}
+  - {role: fluidone, node: dataanalysis, strength: 1}
+  - {role: motherlode, node: excel, strength: 1}
+  - {role: motherlode, node: word, strength: 1}
+  - {role: motherlode, node: powerpoint, strength: 1}
+  - {role: motherlode, node: outlook, strength: 1}
+  - {role: motherlode, node: dataanalysis, strength: 1}
+  - {role: ggmr, node: excel, strength: 1}
+  - {role: ggmr, node: word, strength: 1}
+  - {role: ggmr, node: powerpoint, strength: 1}
+  - {role: ggmr, node: outlook, strength: 1}
+  - {role: ggmr, node: dataanalysis, strength: 1}
+  - {role: sweepbright, node: excel, strength: 1}
+  - {role: sweepbright, node: word, strength: 1}
+  - {role: sweepbright, node: powerpoint, strength: 1}
+  - {role: sweepbright, node: outlook, strength: 1}
+  - {role: sweepbright, node: dataanalysis, strength: 1}
+  - {role: liza, node: excel, strength: 1}
+  - {role: liza, node: word, strength: 1}
+  - {role: liza, node: powerpoint, strength: 1}
+  - {role: liza, node: outlook, strength: 1}
+  - {role: liza, node: dataanalysis, strength: 1}
+
+  # ---- delivery methods, added 24 September 2026 ----
+  - {role: fluidone, node: agile, strength: 3, first: true}
+  - {role: motherlode, node: agile, strength: 3}
+  - {role: ggmr, node: agile, strength: 3}
+  - {role: liza, node: agile, strength: 3}
+  - {role: motherlode, node: waterfall, strength: 2, first: true}
+  - {role: ggmr, node: waterfall, strength: 2}
+  - {role: liza, node: waterfall, strength: 2}
+
+  # ---- from the June 2020 CV ----
+  - {role: ons, node: ingres, strength: 2}
+  - {role: ons, node: reportwriting, strength: 2}
+  - {role: steer, node: simul8, strength: 2}
+  - {role: steer, node: sqlserver, strength: 2}
+  - {role: steer, node: mapinfo, strength: 2}
+  - {role: steer, node: reportwriting, strength: 2}
+  - {role: cerc, node: localisation, strength: 2}
+  - {role: cerc, node: versioncontrol, strength: 2}
+  - {role: cerc, node: dbdesign, strength: 2}
+  - {role: cerc, node: msaccess, strength: 2}
+  - {role: cerc, node: training, strength: 2}
+  - {role: cerc, node: support, strength: 2}
+  - {role: cerc, node: reportwriting, strength: 2}
+  - {role: cerc, node: testing, strength: 2}
+  - {role: source, node: webservices, strength: 2}
+  - {role: source, node: dbdesign, strength: 2}
+  - {role: source, node: hipaa, strength: 2}
+  - {role: source, node: visualstudio, strength: 2}
+  - {role: fluidone, node: thirdpartyapi, strength: 2}
+  - {role: fluidone, node: dbdesign, strength: 2}
+  - {role: fluidone, node: execteam, strength: 2}
+  - {role: fluidone, node: recruitment, strength: 2}
+  - {role: fluidone, node: iso, strength: 2}
+  - {role: fluidone, node: visualstudio, strength: 2}
+  - {role: fluidone, node: tfs, strength: 2}
+  - {role: fluidone, node: mvc, strength: 2}
+  - {role: fluidone, node: mysql, strength: 2}
+  - {role: fluidone, node: php, strength: 2}
+  - {role: fluidone, node: java, strength: 2}
+  - {role: fluidone, node: soap, strength: 2}
+  - {role: fluidone, node: webservices, strength: 2}
+  - {role: fluidone, node: versioncontrol, strength: 2}
+  - {role: fluidone, node: support, strength: 2}
+  - {role: motherlode, node: reportwriting, strength: 2}
+  - {role: personal, node: versioncontrol, strength: 3}
+
+  # ---- consultancy ----
+  - {role: steer, node: consultant, strength: 3}
+  - {role: cerc, node: consultant, strength: 3}
+  - {role: motherlode, node: consultant, strength: 3}
+  - {role: ggmr, node: consultant, strength: 3}
+
+  # ---- getting work done through people who do not report to you, which is
+  #      a different thing from the formal line management at FluidOne ----
+  - {role: fluidone, node: peoplemgmt, strength: 3}
+  - {role: ggmr, node: peoplemgmt, strength: 3}
+  - {role: motherlode, node: peoplemgmt, strength: 3}
+  - {role: sweepbright, node: peoplemgmt, strength: 3}
+
+  # ---- education ----
+  - {role: education, node: maths, strength: 3}
+  - {role: education, node: stats, strength: 3}
+  - {role: education, node: dataanalysis, strength: 2}
+  - {role: personal, node: machinelearning, strength: 3}
+  - {role: personal, node: keras, strength: 3}
+  - {role: personal, node: pandas, strength: 3}
+  - {role: personal, node: aws, strength: 2}
+  - {role: personal, node: d3, strength: 3}
+  - {role: personal, node: claudecode, strength: 3}
+  - {role: personal, node: llmfeatures, strength: 3}
+  - {role: education, node: bsc, strength: 3}
+  - {role: education, node: msc, strength: 3}
+  - {role: personal, node: nanodegree, strength: 3}
+  - {role: personal, node: french, strength: 3}

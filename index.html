@@ -1,0 +1,370 @@
+<title>Career Network</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+:root{--ink:#1b1d21;--muted:#7a746c;--paper:#f7f5f1;--rule:#ded8cd;
+ --analytics:#0072b2;--engineering:#d55e00;--product:#009e73;--ai:#cc79a7;
+ --leadership:#e69f00;--compliance:#56b4e9;--sector:#6b6660;--everyday:#b3aea6;--education:#5b4b8a;
+ --role:#33302c;
+ --sans:"Public Sans",-apple-system,Helvetica,Arial,sans-serif;
+ --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);margin:0}
+header{padding:18px 24px 12px;border-bottom:1px solid var(--rule)}
+h1{font-size:23px;margin:0;font-weight:600}
+p.sub{margin:6px 0 0;color:#4b5158;font-size:14px;max-width:86ch}
+.key{display:flex;flex-wrap:wrap;gap:16px;margin-top:11px;font-size:12.5px;align-items:center}
+.key .grp{cursor:pointer;user-select:none;padding:2px 6px;border-radius:3px;border:1px solid transparent}
+.key .grp:hover{background:#eae5db}
+.key .grp.on{background:#1b1d21;color:#fff}
+.key .grp:focus-visible{outline:2px solid var(--analytics);outline-offset:1px}
+.key b{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.sw{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.sq{border-radius:2px}
+.wrap{position:relative}
+svg{display:block;width:100%;height:74vh;min-height:520px}
+.role circle{fill:var(--paper);stroke:var(--role);stroke-width:2.2}
+.link{stroke-linecap:round}
+.lbl{font-size:10.5px;fill:#4b5158;pointer-events:none}
+.rlbl{font-size:13px;font-weight:600;fill:#1b1d21;pointer-events:none;
+  paint-order:stroke;stroke:var(--paper);stroke-width:4.5}
+.axis text{font-family:var(--mono);font-size:11px;fill:#a39b8f}
+.axis line{stroke:#e4ded2}
+.dim{opacity:.1}
+/* stroke-opacity is set per link as an attribute, so dimming has to override
+   both that and opacity */
+.link.dim{opacity:.1;stroke-opacity:.1}
+.link.hot{opacity:1;stroke-opacity:1;stroke-width:2.8}
+.node.sel circle,.node.sel rect{stroke:#1b1d21;stroke-width:2}
+.role.sel circle{stroke-width:3.4}
+.modes{display:inline-flex;align-items:center;gap:6px;margin-left:4px}
+.find{display:inline-flex;align-items:center;gap:7px}
+.find input{font-family:var(--sans);font-size:12.5px;padding:4px 9px;width:160px;
+ border:1px solid var(--rule);border-radius:3px;background:#fff;color:var(--ink)}
+.find input:focus{outline:2px solid var(--analytics);outline-offset:1px;border-color:var(--analytics)}
+#hits{font-family:var(--mono);font-size:11px;color:var(--muted);min-width:64px}
+.modes button{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+ border:1px solid var(--rule);background:#fff;color:var(--muted);padding:4px 10px;border-radius:3px;cursor:pointer}
+.modes button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.modes button:focus-visible{outline:2px solid var(--analytics);outline-offset:2px}
+#tip{position:absolute;pointer-events:none;background:#1b1d21;color:#fff;font-size:12.5px;
+  padding:7px 10px;border-radius:4px;opacity:0;transition:opacity .12s;max-width:280px;line-height:1.45}
+#tip b{display:block;font-size:13px;margin-bottom:2px}
+</style>
+<header>
+<h1>Career network</h1>
+<p class="sub">Circles are roles, education and training, running left to right by date and sized by years. Lines connect each role to
+what was used there, coloured by type. Hover to isolate a node, click to keep it selected, drag to rearrange.</p>
+<div class="key"><b>type</b>
+<span class="grp" data-group="analytics" role="button" tabindex="0"><i class="sw" style="background:var(--analytics)"></i>analytics</span>
+<span class="grp" data-group="engineering" role="button" tabindex="0"><i class="sw" style="background:var(--engineering)"></i>engineering</span>
+<span class="grp" data-group="product" role="button" tabindex="0"><i class="sw" style="background:var(--product)"></i>product</span>
+<span class="grp" data-group="ai" role="button" tabindex="0"><i class="sw" style="background:var(--ai)"></i>AI</span>
+<span class="grp" data-group="leadership" role="button" tabindex="0"><i class="sw" style="background:var(--leadership)"></i>leadership</span>
+<span class="grp" data-group="compliance" role="button" tabindex="0"><i class="sw" style="background:var(--compliance)"></i>compliance</span>
+<span class="grp" data-group="sector" role="button" tabindex="0"><i class="sw sq" style="background:var(--sector)"></i>sector</span>
+<span class="grp" data-group="education" role="button" tabindex="0"><i class="sw sq" style="background:var(--education)"></i>education</span>
+<span class="modes"><b>layout</b>
+<button id="m-date">by date</button><button id="m-free" class="on">free</button></span>
+<span class="find"><b>find</b>
+<input id="search" type="search" list="labels" placeholder="a skill or tool" autocomplete="off">
+<span id="hits"></span></span>
+<datalist id="labels"></datalist>
+</div>
+</header>
+<div class="wrap"><svg id="g"></svg><div id="tip"></div></div>
+<script>
+const DATA = {"roles": [{"id": "education", "company": "Education", "title": "Degrees", "kind": "study", "start": "1995-09", "end": "2001-09", "years": 4, "mid": 1998.5, "location": "Leicester and Bristol"}, {"id": "ons", "company": "Office for National Statistics", "title": "Retail Prices Index", "start": "1999-02", "end": "2000-08", "location": "United Kingdom", "years": 2, "mid": 1999.83}, {"id": "steer", "company": "Steer Davies Gleave", "title": "Transport modelling", "start": "2001-09", "end": "2003-01", "location": "London", "years": 2, "mid": 2002.33}, {"id": "cerc", "company": "CERC", "title": "Scientific software", "start": "2003-01", "end": "2006-01", "location": "Cambridge", "years": 3, "mid": 2004.5}, {"id": "source", "company": "Source Medical", "title": "Developer", "start": "2006-01", "end": "2008-01", "location": "Connecticut, USA", "years": 2, "mid": 2007.0}, {"id": "fluidone", "company": "FluidOne", "title": "Developer, then Head of Software Development", "start": "2008-06", "end": "2018-01", "location": "London", "years": 10, "mid": 2013.21}, {"id": "motherlode", "company": "Motherlode Media", "title": "Technical Project Manager", "start": "2018-06", "end": "2022-02", "location": "Remote, France", "years": 4, "mid": 2020.25}, {"id": "ggmr", "company": "GGMR", "title": "Technical Project Manager", "employment": "fixed-term contract", "start": "2022-03", "end": "2022-06", "years": 0.3, "location": "Remote, France", "mid": 2022.29}, {"id": "sweepbright", "company": "SweepBright", "title": "Technical Product Manager", "start": "2022-11", "end": "2024-12", "location": "Remote, France", "years": 3, "mid": 2023.88}, {"id": "personal", "company": "Personal training", "title": "Self-directed learning and side projects", "kind": "study", "start": "2019-01", "end": null, "location": "Chamonix", "years": 8, "mid": 2022.83}, {"id": "liza", "company": "Liza.network", "title": "Product Manager / Data Analyst", "start": "2026-02", "end": null, "location": "Remote, France", "years": 1, "mid": 2026.38}], "nodes": [{"id": "sql", "label": "SQL", "kind": "skill", "group": "analytics", "roles": 8}, {"id": "stats", "label": "Statistical modelling", "kind": "skill", "group": "analytics", "roles": 4}, {"id": "maths", "label": "Applied mathematics", "kind": "skill", "group": "analytics", "roles": 1}, {"id": "analytics", "label": "Product analytics", "kind": "skill", "group": "analytics", "roles": 2}, {"id": "dataviz", "label": "Data visualisation", "kind": "skill", "group": "analytics", "roles": 1}, {"id": "storytelling", "label": "Data storytelling", "kind": "skill", "group": "analytics", "roles": 1}, {"id": "gis", "label": "GIS", "kind": "skill", "group": "analytics", "roles": 2}, {"id": "tableau", "label": "Tableau", "kind": "tool", "group": "analytics", "roles": 1}, {"id": "mixpanel", "label": "Mixpanel", "kind": "tool", "group": "analytics", "roles": 1}, {"id": "ga", "label": "Google Analytics", "kind": "tool", "group": "analytics", "roles": 3}, {"id": "lookerstudio", "label": "Looker Studio", "kind": "tool", "group": "analytics", "roles": 2}, {"id": "mapinfo", "label": "MapInfo", "kind": "tool", "group": "analytics", "roles": 3}, {"id": "arcgis", "label": "ArcGIS", "kind": "tool", "group": "analytics", "roles": 1}, {"id": "python", "label": "Python", "kind": "tool", "group": "analytics", "roles": 2}, {"id": "d3", "label": "D3", "kind": "tool", "group": "analytics", "roles": 1}, {"id": "dataanalysis", "label": "Data analysis", "kind": "skill", "group": "analytics", "roles": 10}, {"id": "mongodb", "label": "MongoDB", "kind": "tool", "group": "analytics", "roles": 1}, {"id": "nosql", "label": "NoSQL", "kind": "skill", "group": "analytics", "roles": 1}, {"id": "mysql", "label": "MySQL", "kind": "tool", "group": "analytics", "roles": 1}, {"id": "msaccess", "label": "MS Access", "kind": "tool", "group": "analytics", "roles": 1}, {"id": "pandas", "label": "Pandas", "kind": "tool", "group": "analytics", "roles": 1}, {"id": "simul8", "label": "Simul8", "kind": "tool", "group": "analytics", "roles": 1}, {"id": "ingres", "label": "Ingres", "kind": "tool", "group": "analytics", "roles": 1}, {"id": "apidesign", "label": "API design", "kind": "skill", "group": "engineering", "roles": 1}, {"id": "devtools", "label": "Building for developers", "kind": "skill", "group": "engineering", "roles": 1}, {"id": "fullstack", "label": "Reading and modifying code", "kind": "skill", "group": "engineering", "roles": 1}, {"id": "billing", "label": "Billing automation", "kind": "skill", "group": "engineering", "roles": 1}, {"id": "uidev", "label": "UI development", "kind": "skill", "group": "engineering", "roles": 2}, {"id": "csharp", "label": "C#", "kind": "tool", "group": "engineering", "roles": 2}, {"id": "sqlserver", "label": "SQL Server", "kind": "tool", "group": "engineering", "roles": 2}, {"id": "ssrs", "label": "SSRS", "kind": "tool", "group": "engineering", "roles": 1}, {"id": "wagtail", "label": "Wagtail", "kind": "tool", "group": "engineering", "roles": 1}, {"id": "drupal", "label": "Drupal", "kind": "tool", "group": "engineering", "roles": 1}, {"id": "k8s", "label": "Kubernetes", "kind": "tool", "group": "engineering", "roles": 1}, {"id": "terraform", "label": "Terraform", "kind": "tool", "group": "engineering", "roles": 1}, {"id": "apis", "label": "APIs", "kind": "skill", "group": "engineering", "roles": 4}, {"id": "vb6", "label": "VB6", "kind": "tool", "group": "engineering", "roles": 1}, {"id": "perl", "label": "Perl", "kind": "tool", "group": "engineering", "roles": 1}, {"id": "loadbalance", "label": "Load balancing", "kind": "skill", "group": "engineering", "roles": 1}, {"id": "devops", "label": "DevOps", "kind": "skill", "group": "engineering", "roles": 1}, {"id": "git", "label": "Git", "kind": "tool", "group": "engineering", "roles": 2}, {"id": "testing", "label": "Testing", "kind": "skill", "group": "engineering", "roles": 6}, {"id": "thirdpartyapi", "label": "Third-party integration", "kind": "skill", "group": "engineering", "roles": 1}, {"id": "webservices", "label": "Web services", "kind": "skill", "group": "engineering", "roles": 2}, {"id": "dbdesign", "label": "Database design", "kind": "skill", "group": "engineering", "roles": 3}, {"id": "versioncontrol", "label": "Version control", "kind": "skill", "group": "engineering", "roles": 3}, {"id": "php", "label": "PHP", "kind": "tool", "group": "engineering", "roles": 1}, {"id": "java", "label": "Java", "kind": "tool", "group": "engineering", "roles": 1}, {"id": "soap", "label": "SOAP", "kind": "tool", "group": "engineering", "roles": 1}, {"id": "mvc", "label": "MVC", "kind": "tool", "group": "engineering", "roles": 1}, {"id": "visualstudio", "label": "Visual Studio", "kind": "tool", "group": "engineering", "roles": 2}, {"id": "tfs", "label": "TFS", "kind": "tool", "group": "engineering", "roles": 1}, {"id": "discovery", "label": "Discovery", "kind": "skill", "group": "product", "roles": 2}, {"id": "roadmap", "label": "Roadmap and prioritisation", "kind": "skill", "group": "product", "roles": 2}, {"id": "release", "label": "Release management", "kind": "skill", "group": "product", "roles": 2}, {"id": "onboarding", "label": "Onboarding and time to value", "kind": "skill", "group": "product", "roles": 1}, {"id": "mobile", "label": "Mobile launch", "kind": "skill", "group": "product", "roles": 1}, {"id": "localisation", "label": "Localisation and RTL", "kind": "skill", "group": "product", "roles": 3}, {"id": "processanal", "label": "Process analysis", "kind": "skill", "group": "product", "roles": 1}, {"id": "jira", "label": "Jira", "kind": "tool", "group": "product", "roles": 3}, {"id": "appstores", "label": "App Store and Play", "kind": "tool", "group": "product", "roles": 2}, {"id": "projectmgmt", "label": "Project management", "kind": "skill", "group": "product", "roles": 4}, {"id": "productmgmt", "label": "Product management", "kind": "skill", "group": "product", "roles": 3}, {"id": "android", "label": "Android", "kind": "domain", "group": "product", "roles": 2}, {"id": "ios", "label": "iOS", "kind": "domain", "group": "product", "roles": 2}, {"id": "web", "label": "Web", "kind": "domain", "group": "product", "roles": 2}, {"id": "notion", "label": "Notion", "kind": "tool", "group": "product", "roles": 2}, {"id": "llmfeatures", "label": "Shipping LLM features", "kind": "skill", "group": "ai", "roles": 2}, {"id": "agents", "label": "Browser agents", "kind": "skill", "group": "ai", "roles": 1}, {"id": "claudecode", "label": "Claude Code", "kind": "tool", "group": "ai", "roles": 2}, {"id": "openai", "label": "OpenAI API", "kind": "tool", "group": "ai", "roles": 1}, {"id": "mcp", "label": "MCP", "kind": "tool", "group": "ai", "roles": 1}, {"id": "machinelearning", "label": "Machine learning", "kind": "skill", "group": "ai", "roles": 1}, {"id": "keras", "label": "Keras", "kind": "tool", "group": "ai", "roles": 1}, {"id": "aws", "label": "AWS", "kind": "tool", "group": "ai", "roles": 1}, {"id": "linemgmt", "label": "Line management", "kind": "skill", "group": "leadership", "roles": 1}, {"id": "peoplemgmt", "label": "Influence without authority", "kind": "skill", "group": "leadership", "roles": 4}, {"id": "distributed", "label": "Distributed teams", "kind": "skill", "group": "leadership", "roles": 2}, {"id": "contractors", "label": "Coordinating contractors", "kind": "skill", "group": "leadership", "roles": 1}, {"id": "agile", "label": "Agile facilitation", "kind": "skill", "group": "leadership", "roles": 5}, {"id": "demos", "label": "Company demos", "kind": "skill", "group": "leadership", "roles": 2}, {"id": "waterfall", "label": "Waterfall", "kind": "skill", "group": "leadership", "roles": 3}, {"id": "execteam", "label": "Executive team", "kind": "skill", "group": "leadership", "roles": 1}, {"id": "recruitment", "label": "Recruitment", "kind": "skill", "group": "leadership", "roles": 1}, {"id": "training", "label": "Training and enablement", "kind": "skill", "group": "leadership", "roles": 1}, {"id": "reportwriting", "label": "Report writing", "kind": "skill", "group": "leadership", "roles": 4}, {"id": "support", "label": "Customer support", "kind": "skill", "group": "leadership", "roles": 2}, {"id": "consultant", "label": "Consultancy", "kind": "skill", "group": "leadership", "roles": 4}, {"id": "gdpr", "label": "GDPR in practice", "kind": "skill", "group": "compliance", "roles": 1}, {"id": "fraud", "label": "Fraud prevention", "kind": "skill", "group": "compliance", "roles": 1}, {"id": "childsafety", "label": "Child safety review", "kind": "skill", "group": "compliance", "roles": 1}, {"id": "payments", "label": "Payments integration", "kind": "skill", "group": "compliance", "roles": 2}, {"id": "iso", "label": "ISO standards", "kind": "skill", "group": "compliance", "roles": 1}, {"id": "hipaa", "label": "HIPAA", "kind": "skill", "group": "compliance", "roles": 1}, {"id": "telecoms", "label": "Telecoms", "kind": "domain", "group": "sector", "roles": 2}, {"id": "property", "label": "Property", "kind": "domain", "group": "sector", "roles": 1}, {"id": "nonprofit", "label": "Non-profit", "kind": "domain", "group": "sector", "roles": 1}, {"id": "health", "label": "Healthcare", "kind": "domain", "group": "sector", "roles": 1}, {"id": "environment", "label": "Environment", "kind": "domain", "group": "sector", "roles": 1}, {"id": "consumer", "label": "Consumer mobile", "kind": "domain", "group": "sector", "roles": 1}, {"id": "bsc", "label": "BSc Mathematics, Leicester", "kind": "domain", "group": "education", "roles": 1}, {"id": "msc", "label": "MSc Environmental & Industrial Modelling, Bristol", "kind": "domain", "group": "education", "roles": 1}, {"id": "nanodegree", "label": "Machine Learning Engineering, Udacity", "kind": "domain", "group": "education", "roles": 1}, {"id": "french", "label": "French (B1)", "kind": "skill", "group": "education", "roles": 1}, {"id": "excel", "label": "Excel", "kind": "tool", "group": "everyday", "everyday": true, "roles": 9}, {"id": "word", "label": "Word", "kind": "tool", "group": "everyday", "everyday": true, "roles": 9}, {"id": "powerpoint", "label": "PowerPoint", "kind": "tool", "group": "everyday", "everyday": true, "roles": 9}, {"id": "outlook", "label": "Outlook", "kind": "tool", "group": "everyday", "everyday": true, "roles": 9}], "links": [{"role": "ons", "node": "sql", "strength": 2}, {"role": "ons", "node": "stats", "strength": 3}, {"role": "ons", "node": "gis", "strength": 2}, {"role": "ons", "node": "mapinfo", "strength": 2}, {"role": "steer", "node": "stats", "strength": 3}, {"role": "cerc", "node": "uidev", "strength": 3}, {"role": "cerc", "node": "stats", "strength": 2}, {"role": "cerc", "node": "gis", "strength": 2}, {"role": "cerc", "node": "arcgis", "strength": 2}, {"role": "cerc", "node": "environment", "strength": 3}, {"role": "source", "node": "csharp", "strength": 3}, {"role": "source", "node": "uidev", "strength": 3}, {"role": "source", "node": "dataviz", "strength": 2}, {"role": "source", "node": "health", "strength": 3}, {"role": "fluidone", "node": "apidesign", "strength": 3}, {"role": "fluidone", "node": "devtools", "strength": 3}, {"role": "fluidone", "node": "billing", "strength": 3}, {"role": "fluidone", "node": "processanal", "strength": 3}, {"role": "fluidone", "node": "linemgmt", "strength": 3}, {"role": "fluidone", "node": "distributed", "strength": 2}, {"role": "fluidone", "node": "fullstack", "strength": 3}, {"role": "fluidone", "node": "discovery", "strength": 3}, {"role": "fluidone", "node": "sqlserver", "strength": 3}, {"role": "fluidone", "node": "ssrs", "strength": 2}, {"role": "fluidone", "node": "sql", "strength": 3}, {"role": "fluidone", "node": "csharp", "strength": 2}, {"role": "fluidone", "node": "telecoms", "strength": 3}, {"role": "motherlode", "node": "payments", "strength": 3}, {"role": "motherlode", "node": "fraud", "strength": 3}, {"role": "motherlode", "node": "localisation", "strength": 3}, {"role": "motherlode", "node": "distributed", "strength": 3}, {"role": "motherlode", "node": "drupal", "strength": 2}, {"role": "motherlode", "node": "lookerstudio", "strength": 2}, {"role": "motherlode", "node": "analytics", "strength": 2}, {"role": "motherlode", "node": "nonprofit", "strength": 3}, {"role": "ggmr", "node": "contractors", "strength": 3}, {"role": "ggmr", "node": "wagtail", "strength": 2}, {"role": "ggmr", "node": "python", "strength": 1}, {"role": "ggmr", "node": "k8s", "strength": 1}, {"role": "ggmr", "node": "terraform", "strength": 1}, {"role": "ggmr", "node": "lookerstudio", "strength": 2}, {"role": "ggmr", "node": "telecoms", "strength": 2}, {"role": "sweepbright", "node": "analytics", "strength": 3}, {"role": "sweepbright", "node": "mixpanel", "strength": 3}, {"role": "sweepbright", "node": "ga", "strength": 2}, {"role": "sweepbright", "node": "tableau", "strength": 3}, {"role": "sweepbright", "node": "storytelling", "strength": 3}, {"role": "sweepbright", "node": "mobile", "strength": 3}, {"role": "sweepbright", "node": "llmfeatures", "strength": 3}, {"role": "sweepbright", "node": "openai", "strength": 2}, {"role": "sweepbright", "node": "onboarding", "strength": 2}, {"role": "sweepbright", "node": "localisation", "strength": 2}, {"role": "sweepbright", "node": "roadmap", "strength": 3}, {"role": "sweepbright", "node": "release", "strength": 2}, {"role": "sweepbright", "node": "agile", "strength": 3}, {"role": "sweepbright", "node": "demos", "strength": 3}, {"role": "sweepbright", "node": "discovery", "strength": 3}, {"role": "sweepbright", "node": "appstores", "strength": 2}, {"role": "sweepbright", "node": "property", "strength": 3}, {"role": "sweepbright", "node": "android", "strength": 3}, {"role": "sweepbright", "node": "ios", "strength": 3}, {"role": "sweepbright", "node": "web", "strength": 3}, {"role": "liza", "node": "release", "strength": 3}, {"role": "liza", "node": "appstores", "strength": 3}, {"role": "liza", "node": "agents", "strength": 3}, {"role": "liza", "node": "claudecode", "strength": 3}, {"role": "liza", "node": "mcp", "strength": 2}, {"role": "liza", "node": "jira", "strength": 3}, {"role": "liza", "node": "gdpr", "strength": 3}, {"role": "liza", "node": "childsafety", "strength": 3}, {"role": "liza", "node": "payments", "strength": 1}, {"role": "liza", "node": "roadmap", "strength": 2}, {"role": "liza", "node": "consumer", "strength": 3}, {"role": "liza", "node": "android", "strength": 3}, {"role": "liza", "node": "ios", "strength": 3}, {"role": "liza", "node": "web", "strength": 3}, {"role": "steer", "node": "sql", "strength": 2}, {"role": "cerc", "node": "sql", "strength": 2}, {"role": "source", "node": "sql", "strength": 2}, {"role": "motherlode", "node": "sql", "strength": 2}, {"role": "ggmr", "node": "sql", "strength": 2}, {"role": "sweepbright", "node": "sql", "strength": 2}, {"role": "cerc", "node": "mapinfo", "strength": 2}, {"role": "cerc", "node": "vb6", "strength": 2}, {"role": "sweepbright", "node": "mongodb", "strength": 2}, {"role": "fluidone", "node": "nosql", "strength": 2}, {"role": "fluidone", "node": "perl", "strength": 2}, {"role": "fluidone", "node": "loadbalance", "strength": 2}, {"role": "fluidone", "node": "apis", "strength": 3}, {"role": "source", "node": "apis", "strength": 3}, {"role": "motherlode", "node": "apis", "strength": 3}, {"role": "sweepbright", "node": "apis", "strength": 3}, {"role": "motherlode", "node": "ga", "strength": 2}, {"role": "ggmr", "node": "ga", "strength": 2}, {"role": "fluidone", "node": "projectmgmt", "strength": 3}, {"role": "ggmr", "node": "projectmgmt", "strength": 3}, {"role": "motherlode", "node": "projectmgmt", "strength": 3}, {"role": "liza", "node": "projectmgmt", "strength": 3}, {"role": "fluidone", "node": "productmgmt", "strength": 3}, {"role": "sweepbright", "node": "productmgmt", "strength": 3}, {"role": "liza", "node": "productmgmt", "strength": 3}, {"role": "sweepbright", "node": "git", "strength": 2}, {"role": "personal", "node": "git", "strength": 2}, {"role": "personal", "node": "python", "strength": 3}, {"role": "motherlode", "node": "jira", "strength": 2}, {"role": "fluidone", "node": "jira", "strength": 2}, {"role": "sweepbright", "node": "notion", "strength": 2}, {"role": "ggmr", "node": "notion", "strength": 2}, {"role": "motherlode", "node": "devops", "strength": 2}, {"role": "fluidone", "node": "demos", "strength": 2}, {"role": "fluidone", "node": "testing", "strength": 2}, {"role": "motherlode", "node": "testing", "strength": 2}, {"role": "ggmr", "node": "testing", "strength": 2}, {"role": "sweepbright", "node": "testing", "strength": 2}, {"role": "liza", "node": "testing", "strength": 2}, {"role": "ons", "node": "excel", "strength": 1}, {"role": "ons", "node": "word", "strength": 1}, {"role": "ons", "node": "powerpoint", "strength": 1}, {"role": "ons", "node": "outlook", "strength": 1}, {"role": "ons", "node": "dataanalysis", "strength": 1}, {"role": "steer", "node": "excel", "strength": 1}, {"role": "steer", "node": "word", "strength": 1}, {"role": "steer", "node": "powerpoint", "strength": 1}, {"role": "steer", "node": "outlook", "strength": 1}, {"role": "steer", "node": "dataanalysis", "strength": 1}, {"role": "cerc", "node": "excel", "strength": 1}, {"role": "cerc", "node": "word", "strength": 1}, {"role": "cerc", "node": "powerpoint", "strength": 1}, {"role": "cerc", "node": "outlook", "strength": 1}, {"role": "cerc", "node": "dataanalysis", "strength": 1}, {"role": "source", "node": "excel", "strength": 1}, {"role": "source", "node": "word", "strength": 1}, {"role": "source", "node": "powerpoint", "strength": 1}, {"role": "source", "node": "outlook", "strength": 1}, {"role": "source", "node": "dataanalysis", "strength": 1}, {"role": "fluidone", "node": "excel", "strength": 1}, {"role": "fluidone", "node": "word", "strength": 1}, {"role": "fluidone", "node": "powerpoint", "strength": 1}, {"role": "fluidone", "node": "outlook", "strength": 1}, {"role": "fluidone", "node": "dataanalysis", "strength": 1}, {"role": "motherlode", "node": "excel", "strength": 1}, {"role": "motherlode", "node": "word", "strength": 1}, {"role": "motherlode", "node": "powerpoint", "strength": 1}, {"role": "motherlode", "node": "outlook", "strength": 1}, {"role": "motherlode", "node": "dataanalysis", "strength": 1}, {"role": "ggmr", "node": "excel", "strength": 1}, {"role": "ggmr", "node": "word", "strength": 1}, {"role": "ggmr", "node": "powerpoint", "strength": 1}, {"role": "ggmr", "node": "outlook", "strength": 1}, {"role": "ggmr", "node": "dataanalysis", "strength": 1}, {"role": "sweepbright", "node": "excel", "strength": 1}, {"role": "sweepbright", "node": "word", "strength": 1}, {"role": "sweepbright", "node": "powerpoint", "strength": 1}, {"role": "sweepbright", "node": "outlook", "strength": 1}, {"role": "sweepbright", "node": "dataanalysis", "strength": 1}, {"role": "liza", "node": "excel", "strength": 1}, {"role": "liza", "node": "word", "strength": 1}, {"role": "liza", "node": "powerpoint", "strength": 1}, {"role": "liza", "node": "outlook", "strength": 1}, {"role": "liza", "node": "dataanalysis", "strength": 1}, {"role": "fluidone", "node": "agile", "strength": 3}, {"role": "motherlode", "node": "agile", "strength": 3}, {"role": "ggmr", "node": "agile", "strength": 3}, {"role": "liza", "node": "agile", "strength": 3}, {"role": "motherlode", "node": "waterfall", "strength": 2}, {"role": "ggmr", "node": "waterfall", "strength": 2}, {"role": "liza", "node": "waterfall", "strength": 2}, {"role": "ons", "node": "ingres", "strength": 2}, {"role": "ons", "node": "reportwriting", "strength": 2}, {"role": "steer", "node": "simul8", "strength": 2}, {"role": "steer", "node": "sqlserver", "strength": 2}, {"role": "steer", "node": "mapinfo", "strength": 2}, {"role": "steer", "node": "reportwriting", "strength": 2}, {"role": "cerc", "node": "localisation", "strength": 2}, {"role": "cerc", "node": "versioncontrol", "strength": 2}, {"role": "cerc", "node": "dbdesign", "strength": 2}, {"role": "cerc", "node": "msaccess", "strength": 2}, {"role": "cerc", "node": "training", "strength": 2}, {"role": "cerc", "node": "support", "strength": 2}, {"role": "cerc", "node": "reportwriting", "strength": 2}, {"role": "cerc", "node": "testing", "strength": 2}, {"role": "source", "node": "webservices", "strength": 2}, {"role": "source", "node": "dbdesign", "strength": 2}, {"role": "source", "node": "hipaa", "strength": 2}, {"role": "source", "node": "visualstudio", "strength": 2}, {"role": "fluidone", "node": "thirdpartyapi", "strength": 2}, {"role": "fluidone", "node": "dbdesign", "strength": 2}, {"role": "fluidone", "node": "execteam", "strength": 2}, {"role": "fluidone", "node": "recruitment", "strength": 2}, {"role": "fluidone", "node": "iso", "strength": 2}, {"role": "fluidone", "node": "visualstudio", "strength": 2}, {"role": "fluidone", "node": "tfs", "strength": 2}, {"role": "fluidone", "node": "mvc", "strength": 2}, {"role": "fluidone", "node": "mysql", "strength": 2}, {"role": "fluidone", "node": "php", "strength": 2}, {"role": "fluidone", "node": "java", "strength": 2}, {"role": "fluidone", "node": "soap", "strength": 2}, {"role": "fluidone", "node": "webservices", "strength": 2}, {"role": "fluidone", "node": "versioncontrol", "strength": 2}, {"role": "fluidone", "node": "support", "strength": 2}, {"role": "motherlode", "node": "reportwriting", "strength": 2}, {"role": "personal", "node": "versioncontrol", "strength": 3}, {"role": "steer", "node": "consultant", "strength": 3}, {"role": "cerc", "node": "consultant", "strength": 3}, {"role": "motherlode", "node": "consultant", "strength": 3}, {"role": "ggmr", "node": "consultant", "strength": 3}, {"role": "fluidone", "node": "peoplemgmt", "strength": 3}, {"role": "ggmr", "node": "peoplemgmt", "strength": 3}, {"role": "motherlode", "node": "peoplemgmt", "strength": 3}, {"role": "sweepbright", "node": "peoplemgmt", "strength": 3}, {"role": "education", "node": "maths", "strength": 3}, {"role": "education", "node": "stats", "strength": 3}, {"role": "education", "node": "dataanalysis", "strength": 2}, {"role": "personal", "node": "machinelearning", "strength": 3}, {"role": "personal", "node": "keras", "strength": 3}, {"role": "personal", "node": "pandas", "strength": 3}, {"role": "personal", "node": "aws", "strength": 2}, {"role": "personal", "node": "d3", "strength": 3}, {"role": "personal", "node": "claudecode", "strength": 3}, {"role": "personal", "node": "llmfeatures", "strength": 3}, {"role": "education", "node": "bsc", "strength": 3}, {"role": "education", "node": "msc", "strength": 3}, {"role": "personal", "node": "nanodegree", "strength": 3}, {"role": "personal", "node": "french", "strength": 3}]};
+const C = k => getComputedStyle(document.documentElement).getPropertyValue('--'+k).trim();
+const nodes = [
+  ...DATA.roles.map(r=>({...r,type:'role',label:r.company})),
+  ...DATA.nodes.map(n=>({...n,type:'node'}))
+];
+const links = DATA.links.map(l=>({source:l.role,target:l.node,strength:l.strength,first:!!l.first}));
+const byId = new Map(nodes.map(n=>[n.id,n]));
+
+const svg=d3.select('#g'), tip=d3.select('#tip');
+let W=svg.node().clientWidth, H=svg.node().clientHeight;
+const PAD=78;
+const x = d3.scaleLinear().domain(d3.extent(DATA.roles,r=>r.mid)).range([PAD, W-PAD]);
+const rSize = d3.scaleSqrt().domain([0,d3.max(DATA.roles,r=>r.years)]).range([8,44]);
+
+const axis = svg.append('g').attr('class','axis');
+const root = svg.append('g');
+svg.call(d3.zoom().scaleExtent([.4,3]).on('zoom',e=>{
+  if(e.sourceEvent) sim.on('end',null);          // user has taken over
+  root.attr('transform',e.transform);
+}));
+
+function drawAxis(){
+  const ticks = d3.range(1995, 2027, 5);
+  const t = axis.selectAll('g').data(ticks).join('g').attr('transform',d=>`translate(${x(d)},0)`);
+  t.selectAll('line').data(d=>[d]).join('line').attr('y1',26).attr('y2',H-8);
+  t.selectAll('text').data(d=>[d]).join('text').attr('y',18).attr('text-anchor','middle').text(d=>d);
+}
+drawAxis();
+axis.style('display','none');
+
+// roles are pinned to their date on x; everything else floats and settles near
+// the roles that use it
+const sim = d3.forceSimulation(nodes)
+  .force('link', d3.forceLink(links).id(d=>d.id).distance(d=>d.target.everyday?150:82).strength(d=>d.target.everyday?.05:.5))
+  .force('charge', d3.forceManyBody().strength(d=>d.type==='role'?-520:-110))
+  .force('x', d3.forceX(d=>d.type==='role'?x(d.mid):W/2).strength(d=>d.type==='role'?1:.012))
+  .force('y', d3.forceY(H/2).strength(d=>d.type==='role'?.09:.035))
+  .force('collide', d3.forceCollide().radius(d=>d.type==='role'?rSize(d.years)+13:14))
+  .stop();          // applyLayout() starts it once the mode's forces are in place
+
+const GROUPS=['analytics','engineering','product','ai','leadership','compliance','sector','education','everyday'];
+const gIndex=new Map(GROUPS.map((g,i)=>[g,i]));
+const orderedLinks=links.slice().sort((a,b)=>
+  (gIndex.get(byId.get(a.target.id||a.target)?.group) ?? 9) -
+  (gIndex.get(byId.get(b.target.id||b.target)?.group) ?? 9));
+const link = root.append('g').selectAll('path').data(orderedLinks).join('path')
+  .attr('class','link').attr('fill','none')
+  .attr('stroke-width',d=>d.strength*0.9)
+  // each arc takes the colour of the node it runs to, so a role's fan of links
+  // reads as coloured bands rather than uniform grey
+  .attr('stroke',d=>C(byId.get(d.target.id||d.target)?.group||'sector'))
+  .attr('stroke-opacity',.5);
+// gentle arc, so lines fanning out of one role stay separable
+const arc = d => {
+  const dx=d.target.x-d.source.x, dy=d.target.y-d.source.y;
+  const r=Math.hypot(dx,dy)*1.7 || 1;
+  return `M${d.source.x},${d.source.y}A${r},${r} 0 0,1 ${d.target.x},${d.target.y}`;
+};
+
+const node = root.append('g').selectAll('g').data(nodes).join('g')
+  .attr('class',d=>d.type==='role'?'role':'node')
+  .call(d3.drag()
+    .on('start',(e,d)=>{if(!e.active)sim.alphaTarget(.3).restart();d.fx=d.x;d.fy=d.y;})
+    .on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y;})
+    .on('end',(e,d)=>{if(!e.active)sim.alphaTarget(0); if(d.type!=='role'){d.fx=null;d.fy=null;} }));
+
+node.each(function(d){
+  const s=d3.select(this);
+  if(d.type==='role') s.append('circle').attr('r',rSize(d.years));
+  else if(d.kind==='domain') s.append('rect').attr('width',11).attr('height',11).attr('x',-5.5).attr('y',-5.5)
+      .attr('rx',2).attr('fill',C(d.group));
+  else s.append('circle').attr('r',d.kind==='tool'?5:6.8).attr('fill',C(d.group))
+      .attr('opacity',d.everyday?.5:1);
+});
+
+node.append('text')
+  .attr('class',d=>d.type==='role'?'rlbl':'lbl')
+  .attr('x',d=>d.type==='role'?0:10).attr('y',d=>d.type==='role'?4:3.5)
+  .attr('text-anchor',d=>d.type==='role'?'middle':'start')
+  .text(d=>d.label);
+
+const nbr=new Map(nodes.map(n=>[n.id,new Set([n.id])]));
+links.forEach(l=>{nbr.get(l.source.id||l.source).add(l.target.id||l.target);
+                  nbr.get(l.target.id||l.target).add(l.source.id||l.source);});
+
+let locked=null, firstFit=true;
+function highlight(d){
+  const keep=nbr.get(d.id);
+  const touches = l => l.source.id===d.id || l.target.id===d.id;
+  node.classed('dim', n=>!keep.has(n.id)).classed('sel', n=>n.id===d.id);
+  link.classed('dim', l=>!touches(l)).classed('hot', touches);
+}
+function clear(){
+  node.classed('dim',false).classed('sel',false);
+  link.classed('dim',false).classed('hot',false);
+  tip.style('opacity',0);
+}
+node.on('mouseenter',(e,d)=>{
+    if(!locked && !searching) highlight(d);
+    const n = links.filter(l=>l.target.id===d.id).length;
+    const sub = d.type==='role'
+      ? `${d.years<1?Math.round(d.years*12)+' months':d.years+' year'+(d.years===1?'':'s')} · ${d.title}${d.employment?' · '+d.employment:''}`
+      : `${d.kind} · used in ${n} role${n===1?'':'s'}`;
+    tip.html(`<b>${d.label}</b>${sub}`).style('opacity',1);
+  })
+  .on('mousemove',e=>tip.style('left',(e.offsetX+16)+'px').style('top',(e.offsetY+14)+'px'))
+  .on('mouseleave',()=>{ if(!locked && !searching) clear(); else tip.style('opacity',0); })
+  .on('click',(e,d)=>{
+    e.stopPropagation();
+    if(locked===d.id){ locked=null; clear(); }
+    else { locked=d.id; highlight(d); }
+  });
+svg.on('click',()=>{
+  if(groupSel){ groupSel=null; searching=false; d3.selectAll('.grp').classed('on',false);
+                clear(); d3.select('#hits').text(''); return; }
+  if(searching) return; locked=null; clear();
+});
+
+// ---- click a type in the legend to isolate it ----
+let groupSel=null;
+function showGroup(g){
+  const hits=new Set(nodes.filter(n=>n.type==='node' && n.group===g).map(n=>n.id));
+  const touches = l => hits.has(l.target.id) || hits.has(l.source.id);
+  const keep=new Set(hits);
+  links.forEach(l=>{ if(hits.has(l.target.id)) keep.add(l.source.id); });
+  node.classed('dim',n=>!keep.has(n.id)).classed('sel',n=>hits.has(n.id));
+  link.classed('dim',l=>!touches(l)).classed('hot',touches);
+  const roles=new Set(links.filter(touches).map(l=>l.source.id)).size;
+  d3.select('#hits').text(`${hits.size} in ${roles} role${roles===1?'':'s'}`);
+}
+function pickGroup(g){
+  if(groupSel===g){ groupSel=null; searching=false; clear(); d3.select('#hits').text(''); }
+  else { groupSel=g; searching=true; d3.select('#search').property('value',''); showGroup(g); }
+  d3.selectAll('.grp').classed('on',function(){ return this.dataset.group===groupSel; });
+}
+d3.selectAll('.grp')
+  .on('click',function(e){ e.stopPropagation(); pickGroup(this.dataset.group); })
+  .on('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); pickGroup(this.dataset.group); } });
+
+// ---- find a skill or tool ----
+let searching=false;
+d3.select('#labels').selectAll('option')
+  .data(DATA.nodes.map(n=>n.label).sort((a,b)=>a.localeCompare(b)))
+  .join('option').attr('value',d=>d);
+
+d3.select('#search').on('input', function(){
+  if(groupSel){ groupSel=null; d3.selectAll('.grp').classed('on',false); }
+  const q=this.value.trim().toLowerCase();
+  if(!q){ searching=false; locked=null; clear(); d3.select('#hits').text(''); return; }
+  const hits=new Set(nodes.filter(n=>n.type==='node' && n.label.toLowerCase().includes(q)).map(n=>n.id));
+  if(!hits.size){
+    searching=true; node.classed('dim',true).classed('sel',false);
+    link.classed('dim',true).classed('hot',false);
+    d3.select('#hits').text('no match'); return;
+  }
+  searching=true;
+  const touches = l => hits.has(l.source.id) || hits.has(l.target.id);
+  const keep=new Set(hits);
+  links.forEach(l=>{ if(hits.has(l.target.id)) keep.add(l.source.id);
+                     if(hits.has(l.source.id)) keep.add(l.target.id); });
+  node.classed('dim',n=>!keep.has(n.id)).classed('sel',n=>hits.has(n.id));
+  link.classed('dim',l=>!touches(l)).classed('hot',touches);
+  const roleCount=new Set(links.filter(touches).map(l=>l.source.id)).size;
+  d3.select('#hits').text(`${hits.size} match${hits.size===1?'':'es'}, ${roleCount} role${roleCount===1?'':'s'}`);
+});
+d3.select('#search').on('keydown', function(e){
+  if(e.key==='Escape'){ this.value=''; searching=false; locked=null; clear(); d3.select('#hits').text(''); }
+});
+
+/* Labels sit to the right of their dot, so two dots at a similar height and a
+   similar x put their text on top of each other. Nudge the text vertically —
+   never the node, so the layout itself stays honest — and cap the nudge so a
+   label never drifts away from the thing it names. Role labels don't move:
+   they are bold, haloed, and belong dead centre on their circle. */
+const LBL_DY = d => d.type==='role' ? 4 : 3.5;
+function declutter(yScale){
+  const k = yScale||1, GAP = 11.5/k, MAX = 34/k;
+  const boxes=[];
+  node.each(function(d){
+    const t=this.querySelector('text'); if(!t) return;
+    t.setAttribute('y', LBL_DY(d));                    // reset before measuring
+    let w=0; try{ w=t.getComputedTextLength(); }catch(e){}
+    const x0 = d.type==='role' ? d.x-w/2 : d.x+10;
+    const y  = d.y + LBL_DY(d);
+    boxes.push({d,t,x0,x1:x0+w,y,base:y,fixed:d.type==='role'});
+  });
+  boxes.sort((a,b)=>a.y-b.y);
+  const placed=[];
+  for(const b of boxes){
+    if(!b.fixed){
+      // one push can create a new collision further down, so settle it
+      for(let pass=0;pass<6;pass++){
+        let moved=false;
+        for(const p of placed){
+          if(b.x1<p.x0 || b.x0>p.x1) continue;         // no horizontal overlap
+          if(Math.abs(b.y-p.y)<GAP){ b.y=p.y+GAP; moved=true; }
+        }
+        if(!moved) break;
+      }
+      b.y=Math.max(b.base-MAX,Math.min(b.base+MAX,b.y));
+    }
+    placed.push(b);
+  }
+  for(const b of boxes) if(!b.fixed) b.t.setAttribute('y', b.y-b.d.y);
+}
+
+function draw(){
+  link.attr('d',arc);
+  node.attr('transform',d=>`translate(${d.x},${d.y})`);
+}
+sim.on('tick',draw);
+
+/* Ticking to rest with nothing on screen, then fitting, then drawing once, so
+   the diagram arrives at its final size instead of flying in and resizing. */
+function settleNow(){
+  sim.alpha(.9);
+  const n=Math.ceil(Math.log(sim.alphaMin()/sim.alpha())/Math.log(1-sim.alphaDecay()));
+  for(let i=0;i<n;i++) sim.tick();
+  sim.stop();
+  fit();
+  draw();
+}
+
+let mode='free';
+function applyLayout(instant){
+  const byDate = mode==='date';
+  axis.style('display', byDate?null:'none');
+  sim.force('x', d3.forceX(d=> byDate && d.type==='role' ? x(d.mid) : W/2)
+                   .strength(d=> byDate ? (d.type==='role'?1:.012) : (d.type==='role'?.06:.02)))
+     .force('y', d3.forceY(H/2).strength(d=> byDate ? (d.type==='role'?.09:.035) : .04))
+     .force('charge', d3.forceManyBody().strength(d=> d.type==='role' ? (byDate?-520:-900) : -110));
+  nodes.forEach(n=>{ n.fx=null; n.fy=null; });
+  root.attr('transform',null);
+  sim.on('end', fit);
+  if(instant) settleNow(); else sim.alpha(.9).restart();
+}
+d3.select('#m-date').on('click',()=>{mode='date';
+  d3.select('#m-date').classed('on',true); d3.select('#m-free').classed('on',false); applyLayout();});
+d3.select('#m-free').on('click',()=>{mode='free';
+  d3.select('#m-free').classed('on',true); d3.select('#m-date').classed('on',false); applyLayout();});
+
+/* The layout settles wherever the forces put it, which rarely fills the canvas,
+   leaving dead space top and bottom. Once it cools, fit what was actually drawn.
+   In date mode only y is adjusted, because x carries the year and must stay
+   aligned with the axis, which lives outside this group. */
+function fit(){
+  const xs=nodes.map(n=>n.x), ys=nodes.map(n=>n.y);
+  const x0=Math.min(...xs), x1=Math.max(...xs), y0=Math.min(...ys), y1=Math.max(...ys);
+  const padY=34, padX=70;
+  const t = firstFit ? root : root.transition().duration(420);
+  firstFit = false;
+  if(mode==='date'){
+    const k=Math.min(1,(H-padY*2)/Math.max(1,y1-y0));
+    t.attr('transform',`translate(0,${(H-k*(y0+y1))/2}) scale(1,${k})`);
+    declutter(k);
+  } else {
+    const k=Math.min((W-padX*2)/Math.max(1,x1-x0),(H-padY*2)/Math.max(1,y1-y0),1.35);
+    t.attr('transform',`translate(${(W-k*(x0+x1))/2},${(H-k*(y0+y1))/2}) scale(${k})`);
+    declutter(k);
+  }
+}
+// which roles use each node, needed by the grouping force below
+const nodeRoles=new Map();
+links.forEach(l=>{
+  const t=l.target.id||l.target, sId=l.source.id||l.source;
+  if(!nodeRoles.has(t)) nodeRoles.set(t,[]);
+  nodeRoles.get(t).push(sId);
+});
+const angleOf=new Map(GROUPS.map((g,i)=>[g,-Math.PI/2+i*2*Math.PI/GROUPS.length]));
+function groupForce(alpha){
+  const k=0.26*alpha, R=104;
+  for(const n of nodes){
+    if(n.type==='role') continue;
+    const rs=nodeRoles.get(n.id); if(!rs||!rs.length) continue;
+    let cx=0,cy=0,c=0;
+    for(const rid of rs){ const r=byId.get(rid); if(r){cx+=r.x;cy+=r.y;c++;} }
+    if(!c) continue;
+    cx/=c; cy/=c;
+    const a=angleOf.get(n.group)??0;
+    n.vx+=(cx+Math.cos(a)*R-n.x)*k;
+    n.vy+=(cy+Math.sin(a)*R-n.y)*k;
+  }
+}
+sim.force('group', groupForce);
+
+sim.on('end', fit);
+applyLayout(true);      // start in whichever mode is default, already settled
+
+
+addEventListener('resize',()=>{
+  W=svg.node().clientWidth; H=svg.node().clientHeight;
+  x.range([PAD,W-PAD]); drawAxis(); firstFit=true; applyLayout(true);
+});
+</script>
