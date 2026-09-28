@@ -213,6 +213,7 @@ nodes:
   - {id: execteam,     label: Executive team,         kind: skill, group: leadership}
   - {id: recruitment,  label: Recruitment,            kind: skill, group: leadership}
   - {id: training,     label: Training and enablement,kind: skill, group: leadership}
+  - {id: communication,label: Communication,          kind: skill, group: leadership}
   - {id: reportwriting,label: Report writing,         kind: skill, group: leadership}
   - {id: support,      label: Customer support,       kind: skill, group: leadership}
   - {id: consultant,  label: Consultancy,            kind: skill, group: leadership}
@@ -431,6 +432,15 @@ links:
   - {role: liza, node: word, strength: 1}
   - {role: liza, node: powerpoint, strength: 1}
   - {role: liza, node: outlook, strength: 1}
+  - {role: ons, node: communication, strength: 3}
+  - {role: steer, node: communication, strength: 3}
+  - {role: cerc, node: communication, strength: 3}
+  - {role: source, node: communication, strength: 3}
+  - {role: fluidone, node: communication, strength: 3}
+  - {role: motherlode, node: communication, strength: 3}
+  - {role: ggmr, node: communication, strength: 3}
+  - {role: sweepbright, node: communication, strength: 3}
+  - {role: liza, node: communication, strength: 3}
   - {role: liza, node: dataanalysis, strength: 1}
 
   # ---- delivery methods, added 24 September 2026 ----

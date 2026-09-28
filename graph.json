@@ -718,6 +718,13 @@
    "roles": 1
   },
   {
+   "id": "communication",
+   "label": "Communication",
+   "kind": "skill",
+   "group": "leadership",
+   "roles": 9
+  },
+  {
    "id": "reportwriting",
    "label": "Report writing",
    "kind": "skill",
@@ -1688,6 +1695,51 @@
    "role": "liza",
    "node": "outlook",
    "strength": 1
+  },
+  {
+   "role": "ons",
+   "node": "communication",
+   "strength": 3
+  },
+  {
+   "role": "steer",
+   "node": "communication",
+   "strength": 3
+  },
+  {
+   "role": "cerc",
+   "node": "communication",
+   "strength": 3
+  },
+  {
+   "role": "source",
+   "node": "communication",
+   "strength": 3
+  },
+  {
+   "role": "fluidone",
+   "node": "communication",
+   "strength": 3
+  },
+  {
+   "role": "motherlode",
+   "node": "communication",
+   "strength": 3
+  },
+  {
+   "role": "ggmr",
+   "node": "communication",
+   "strength": 3
+  },
+  {
+   "role": "sweepbright",
+   "node": "communication",
+   "strength": 3
+  },
+  {
+   "role": "liza",
+   "node": "communication",
+   "strength": 3
   },
   {
    "role": "liza",
