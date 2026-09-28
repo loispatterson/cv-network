@@ -214,6 +214,7 @@ nodes:
   - {id: recruitment,  label: Recruitment,            kind: skill, group: leadership}
   - {id: training,     label: Training and enablement,kind: skill, group: leadership}
   - {id: communication,label: Communication,          kind: skill, group: leadership}
+  - {id: outofbox,     label: Out of the box thinking, kind: skill, group: leadership}
   - {id: reportwriting,label: Report writing,         kind: skill, group: leadership}
   - {id: support,      label: Customer support,       kind: skill, group: leadership}
   - {id: consultant,  label: Consultancy,            kind: skill, group: leadership}
@@ -441,6 +442,11 @@ links:
   - {role: ggmr, node: communication, strength: 3}
   - {role: sweepbright, node: communication, strength: 3}
   - {role: liza, node: communication, strength: 3}
+  - {role: fluidone, node: outofbox, strength: 3}
+  - {role: motherlode, node: outofbox, strength: 3}
+  - {role: ggmr, node: outofbox, strength: 3}
+  - {role: sweepbright, node: outofbox, strength: 3}
+  - {role: liza, node: outofbox, strength: 3}
   - {role: liza, node: dataanalysis, strength: 1}
 
   # ---- delivery methods, added 24 September 2026 ----
